@@ -81,8 +81,8 @@ export async function createApp() {
   app.set('trust proxy', 2);
 
   const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 3000,
+    windowMs: parseInt(process.env.RATE_LIMIT_WINDOW_MS || String(15 * 60 * 1000)),                                                                                           
+    max: parseInt(process.env.RATE_LIMIT_MAX || '3000'),
     message: 'Too many requests from this IP',
     skip: shouldSkipGlobalRateLimit,
   });
