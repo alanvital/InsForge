@@ -5,6 +5,7 @@ import { TokenManager } from '@/infra/security/token.manager.js';
 import { SecretService } from '@/services/secrets/secret.service.js';
 import logger from '@/utils/logger.js';
 
+const POSTGREST_TIMEOUT_MS = parseInt(process.env.POSTGREST_TIMEOUT_MS || '10000', 10);
 const postgrestUrl = process.env.POSTGREST_BASE_URL || 'http://localhost:5430';
 
 // Connection pooling for PostgREST
@@ -13,7 +14,7 @@ const httpAgent = new http.Agent({
   keepAliveMsecs: 5000,
   maxSockets: 20,
   maxFreeSockets: 5,
-  timeout: 10000,
+  timeout: POSTGREST_TIMEOUT_MS,
 });
 
 const httpsAgent = new https.Agent({
@@ -21,13 +22,13 @@ const httpsAgent = new https.Agent({
   keepAliveMsecs: 5000,
   maxSockets: 20,
   maxFreeSockets: 5,
-  timeout: 10000,
+  timeout: POSTGREST_TIMEOUT_MS,
 });
 
 const postgrestAxios = axios.create({
   httpAgent,
   httpsAgent,
-  timeout: 10000,
+  timeout: POSTGREST_TIMEOUT_MS,
   maxRedirects: 0,
   headers: {
     Connection: 'keep-alive',
