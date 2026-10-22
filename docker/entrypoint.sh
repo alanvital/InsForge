@@ -17,6 +17,16 @@ SOCKET="${DOCKER_SOCKET_PATH:-/var/run/docker.sock}"
 # Only root can change group membership. A deployment that pins `user:` in its compose
 # file has already decided who it runs as, so respect that and run the command as-is.
 if [ "$(id -u)" = '0' ]; then
+  # Volumes written by older releases that ran as root stay root-owned, and `node`
+  # can then neither upload files nor rotate the log file (winston spins at 100% CPU
+  # retrying the rename, so the migrate step never finishes). Hand them to `node`
+  # once; later starts see the right owner and skip the recursive chown.
+  for dir in "${STORAGE_DIR:-/insforge-storage}" "${LOGS_DIR:-/insforge-logs}"; do
+    if [ -d "$dir" ] && [ "$(stat -c '%u' "$dir")" != "$(id -u node)" ]; then
+      chown -R node:node "$dir"
+    fi
+  done
+
   if [ -S "$SOCKET" ]; then
     socket_gid="$(stat -c '%g' "$SOCKET")"
 
