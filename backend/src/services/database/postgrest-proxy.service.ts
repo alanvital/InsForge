@@ -25,12 +25,13 @@ const postgrestUrl = appConfig.database.postgrestBaseUrl;
 const maxSockets = appConfig.database.postgrestMaxSockets;
 const maxFreeSockets = Math.min(appConfig.database.postgrestMaxFreeSockets, maxSockets);
 const freeSocketTimeout = appConfig.database.postgrestFreeSocketTimeoutMs;
+const requestTimeout = appConfig.database.postgrestTimeoutMs;
 
 const httpAgent = new HttpAgent({
   keepAlive: true,
   maxSockets,
   maxFreeSockets,
-  timeout: 10000,
+  timeout: requestTimeout,
   freeSocketTimeout,
 });
 
@@ -38,14 +39,14 @@ const httpsAgent = new HttpsAgent({
   keepAlive: true,
   maxSockets,
   maxFreeSockets,
-  timeout: 10000,
+  timeout: requestTimeout,
   freeSocketTimeout,
 });
 
 const postgrestAxios = axios.create({
   httpAgent,
   httpsAgent,
-  timeout: 10000,
+  timeout: requestTimeout,
   maxRedirects: 0,
 });
 
@@ -74,7 +75,7 @@ const EXCLUDED_HEADERS = new Set([
 ]);
 
 /**
- * Timeout-class errors are never retried: by the time the 10s budget is spent
+ * Timeout-class errors are never retried: by the time the timeout budget is spent
  * the request may already be executing in PostgREST (retrying a write risks a
  * duplicate), and re-running it amplifies load exactly when the database is
  * saturated.

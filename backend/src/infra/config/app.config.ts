@@ -77,6 +77,7 @@ export interface AppConfig {
     postgrestMaxSockets: number;
     postgrestMaxFreeSockets: number;
     postgrestFreeSocketTimeoutMs: number;
+    postgrestTimeoutMs: number;
   };
   auth: {
     rootAdminUsername: string;
@@ -261,6 +262,9 @@ export function loadConfig(): AppConfig {
       // Must stay below PostgREST's own idle connection timeout so free
       // sockets are dropped before the server can close them first.
       postgrestFreeSocketTimeoutMs: parseEnvInt(process.env.POSTGREST_FREE_SOCKET_TIMEOUT_MS, 4000),
+      // Per-request budget toward PostgREST (socket + axios). Slow reports and
+      // RPCs on large tables need more than the 10s default.
+      postgrestTimeoutMs: parseEnvInt(process.env.POSTGREST_TIMEOUT_MS, 10000),
     },
     auth: {
       rootAdminUsername: process.env.ROOT_ADMIN_USERNAME || process.env.ADMIN_EMAIL || '',
